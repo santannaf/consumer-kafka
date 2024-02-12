@@ -1,0 +1,16 @@
+POST http://localhost:3001/message
+
+### end
+
+GET http://localhost:8081/subjects/pessoas-value/versions/1
+
+### end
+
+PUT http://localhost:8081/config/pessoas-value
+Content-Type: application/json
+
+{"compatibility": "BACKWARD"}
+
+###< ./input.json
+
+GET http://localhost:8081/config/pessoas-value
