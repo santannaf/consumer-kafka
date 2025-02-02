@@ -2,6 +2,7 @@ package com.example.democonsumerkafkaprocess
 
 import com.github.avrokotlin.avro4k.Avro
 import kotlinx.coroutines.*
+import kotlinx.serialization.Serializable
 import org.apache.avro.generic.GenericRecord
 import org.apache.kafka.clients.consumer.ConsumerRecord
 import org.slf4j.LoggerFactory
@@ -37,7 +38,7 @@ class ConsumerMessage(
         }
     }
 
-    @KafkaListener(groupId = "group-bank", topics = ["pessoas"])
+
     fun onMessage(batch: MutableList<ConsumerRecord<String, GenericRecord>>, ack: Acknowledgment) {
         log.info("received data on size {}", batch.count())
 
@@ -47,6 +48,27 @@ class ConsumerMessage(
 
         ack.acknowledge() //comitar todo o poll 1500 records ou o numero que tiver no poll
         log.info("batch was finish on size of {}", batch.size)
+    }
+
+    @Serializable
+    data class Todo(
+        val id: Long,
+        val code: String
+    )
+
+    @KafkaListener(groupId = "group-bank", topics = ["\${kafka.topic.example}"])
+    fun onMessage(record: ConsumerRecord<String, GenericRecord>, ack: Acknowledgment) {
+        when (val message = record.value()) {
+            null -> log.warn("message is empty or null")
+            else -> {
+                try {
+                    val todo = avro.fromRecord(Todo.serializer(), message)
+                    log.info("chegou uma mensagem todo: $todo")
+                } catch (error: Exception) {
+//                    producer.publisher(message, "cmd.hello.error")
+                }
+            }
+        }
     }
 
     private fun simulateExternalCall(message: String, offset: Long) {
