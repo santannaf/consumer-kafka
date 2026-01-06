@@ -12,6 +12,9 @@ class ProducerMessage(
 ) : Publisher {
     private val log = LoggerFactory.getLogger(javaClass)
     override fun publisher(message: Pessoa, topic: String) {
+
+        log.info("publisher message to leader")
+
         val event = avro.toRecord(Pessoa.serializer(), message)
 
         kafkaTemplate.send(topic, event).handle { _, error ->

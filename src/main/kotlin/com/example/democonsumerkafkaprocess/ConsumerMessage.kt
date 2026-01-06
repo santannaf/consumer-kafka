@@ -56,13 +56,21 @@ class ConsumerMessage(
         val code: String
     )
 
-    @KafkaListener(groupId = "group-bank", topics = ["\${kafka.topic.example}"])
+    @KafkaListener(groupId = "group-bank-v2", topics = ["\${kafka.topic.example}"])
     fun onMessage(record: ConsumerRecord<String, GenericRecord>, ack: Acknowledgment) {
+
+       log.info("receive message: ${record.value()}")
+
+        ack.acknowledge()
+
+        return
+
+
         when (val message = record.value()) {
             null -> log.warn("message is empty or null")
             else -> {
                 try {
-                    val todo = avro.fromRecord(Todo.serializer(), message)
+                    val todo = avro.fromRecord(Pessoa.serializer(), message)
                     log.info("chegou uma mensagem todo: $todo")
                 } catch (error: Exception) {
 //                    producer.publisher(message, "cmd.hello.error")
@@ -78,4 +86,24 @@ class ConsumerMessage(
             throw Exception("An exception was throw, just test, message: $message, offset:$offset")
         }
     }
+
+
+
+
+//    @KafkaListener(groupId = "group-customer", topics = ["\${kafka.topic.customer}"])
+    fun onMessageCustomer(record: ConsumerRecord<String, String>, ack: Acknowledgment) {
+        when (val message = record.value()) {
+            null -> log.warn("message is empty or null")
+            else -> {
+                try {
+                    log.info("chegou uma mensagem todo: $message")
+//                    val todo = avro.fromRecord(Todo.serializer(), message)
+//                    log.info("chegou uma mensagem todo: $todo")
+                } catch (error: Exception) {
+//                    producer.publisher(message, "cmd.hello.error")
+                }
+            }
+        }
+    }
+
 }
